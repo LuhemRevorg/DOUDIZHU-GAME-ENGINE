@@ -1,0 +1,39 @@
+(define (doudizhu players hands)
+  (local
+    [;; (card-remover lst1 lst2) removes the cards of lst1 from lst2
+
+     ;; card-remover: Hand -> Hand
+     
+     (define (card-remover lst1 lst2)
+       (cond
+         [(empty? lst1) lst2]
+         [(equal? (first lst1) (first lst2)) (card-remover (rest lst1) (rest lst2))]
+         [else (cons (first lst2) (card-remover lst1 (rest lst2)))]))
+
+     ;; (engine players hands played) consumes a list of three players, their hands and the cards
+     ;; which have been previously played and produces the outcome of the game
+
+     ;; engine: (listof (Hand (anyof 'Landlord 'Right 'Left) (listof Hand) -> Hand)) (listof Hand) (listof Hand))) -> (anyof 'Landlord 'Right 'Left)
+
+     (define (engine players hands played)
+       (local
+         [(define landlord (first players))
+          (define right (second players))
+          (define left (third players))
+          (define hand0 (first hands))
+          (define hand1 (second hands))
+          (define hand2 (third hands))]
+         (cond
+           [(empty? hand0) 'Landlord]
+           [(empty? hand1) 'Right]
+           [(empty? hand2) 'Left]
+           [(= 0 (remainder (length played) 3))
+            (engine players (list (card-remover (landlord hand0 'Landlord played) hand0) hand1 hand2)
+                    (cons (landlord hand0 'Landlord played) played))]
+           [(= 1 (remainder (length played) 3))
+            (engine players (list hand0 (card-remover (right hand1 'Right played) hand1) hand2)
+                    (cons (right hand1 'Right played) played))]
+           [(= 2 (remainder (length played) 3))
+            (engine players (list hand0 hand1 (card-remover (left hand2 'Left played) hand2))
+                    (cons (left hand2 'Left played) played))])))]
+    (engine players hands empty)))
